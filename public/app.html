@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>BloodConnect Ops Portal</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-[#0b0f19] text-white">
+
+<div class="flex min-h-screen">
+
+  <!-- Sidebar -->
+  <aside class="w-64 bg-[#0f172a] p-6">
+    <h1 class="text-xl font-bold mb-8">BloodConnect</h1>
+
+    <nav class="space-y-4 text-gray-300">
+      <button onclick="showSection('dashboard')" class="block w-full text-left hover:text-white">Dashboard</button>
+      <button onclick="showSection('helpline')" class="block w-full text-left hover:text-white">Helpline</button>
+      <button onclick="showSection('donors')" class="block w-full text-left hover:text-white">Donors</button>
+      <button onclick="showSection('volunteers')" class="block w-full text-left hover:text-white">Volunteers</button>
+    </nav>
+
+    <div class="mt-10 text-sm text-gray-400">
+      <p>Administrator</p>
+      <button onclick="location.reload()" class="text-red-400 mt-2">Sign Out</button>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="flex-1 p-8">
+
+    <!-- DASHBOARD -->
+    <section id="dashboardSection">
+      <h2 class="text-3xl font-bold mb-6">Operations Dashboard</h2>
+
+      <!-- Stats -->
+      <div class="grid grid-cols-4 gap-6 mb-8">
+        <div class="bg-[#111827] p-6 rounded-xl">
+          <p class="text-gray-400">Active Requests</p>
+          <h3 id="activeCount" class="text-3xl font-bold">0</h3>
+        </div>
+
+        <div class="bg-[#111827] p-6 rounded-xl">
+          <p class="text-gray-400">Volunteers</p>
+          <h3 id="volCount" class="text-3xl font-bold">0</h3>
+        </div>
+
+        <div class="bg-[#111827] p-6 rounded-xl">
+          <p class="text-gray-400">Donors</p>
+          <h3 id="donorCount" class="text-3xl font-bold">0</h3>
+        </div>
+
+        <div class="bg-[#111827] p-6 rounded-xl">
+          <p class="text-gray-400">Completed</p>
+          <h3 id="completedCount" class="text-3xl font-bold">0</h3>
+        </div>
+      </div>
+
+      <!-- Escalation Alerts -->
+      <div class="bg-[#111827] p-6 rounded-xl mb-6">
+        <h3 class="text-red-400 font-semibold mb-4">Escalation Alerts</h3>
+        <div id="alertList" class="space-y-3"></div>
+      </div>
+
+      <!-- Priority Queue -->
+      <div class="bg-[#111827] p-6 rounded-xl">
+        <h3 class="font-semibold mb-4">Priority Queue</h3>
+        <div id="priorityList" class="space-y-3"></div>
+      </div>
+    </section>
+
+    <!-- HELPLINE -->
+    <section id="helplineSection" class="hidden">
+      <h2 class="text-2xl font-bold mb-4">Helpline Requests</h2>
+      <div id="requestList" class="space-y-3"></div>
+    </section>
+
+    <!-- DONORS -->
+    <section id="donorsSection" class="hidden">
+      <h2 class="text-2xl font-bold mb-4">Donor Database</h2>
+      <div id="donorList" class="space-y-3"></div>
+    </section>
+
+    <!-- VOLUNTEERS -->
+    <section id="volunteersSection" class="hidden">
+      <h2 class="text-2xl font-bold mb-4">Volunteers</h2>
+      <div id="volunteerList" class="space-y-3"></div>
+    </section>
+
+  </main>
+</div>
+
+<script>
+function showSection(section) {
+  document.querySelectorAll("section").forEach(s => s.classList.add("hidden"));
+  document.getElementById(section + "Section").classList.remove("hidden");
+}
+
+async function loadData() {
+  const dash = await fetch("/api/dashboard").then(r => r.json());
+
+  document.getElementById("volCount").innerText = dash.totalVolunteers;
+  document.getElementById("donorCount").innerText = dash.totalDonors;
+  document.getElementById("activeCount").innerText = dash.activeRequests;
+  document.getElementById("completedCount").innerText = dash.completedRequests;
+
+  const requests = await fetch("/api/requests").then(r => r.json());
+  const reqList = document.getElementById("requestList");
+  const alertList = document.getElementById("alertList");
+  const priorityList = document.getElementById("priorityList");
+
+  reqList.innerHTML = "";
+  alertList.innerHTML = "";
+  priorityList.innerHTML = "";
+
+  requests.forEach(r => {
+    const card = `
+      <div class="bg-[#1f2937] p-4 rounded-xl">
+        <p class="font-semibold">${r.patientName}</p>
+        <p class="text-sm text-gray-400">${r.bloodGroup} • ${r.city}</p>
+        <p class="text-xs text-red-400">${r.status}</p>
+      </div>`;
+
+    reqList.innerHTML += card;
+
+    if (r.priority === "critical") {
+      alertList.innerHTML += card;
+    }
+
+    priorityList.innerHTML += card;
+  });
+
+  const donors = await fetch("/api/donors").then(r => r.json());
+  const donorList = document.getElementById("donorList");
+  donorList.innerHTML = "";
+  donors.forEach(d => {
+    donorList.innerHTML += `
+      <div class="bg-[#1f2937] p-4 rounded-xl">
+        <p class="font-semibold">${d.name}</p>
+        <p class="text-sm text-gray-400">${d.bloodGroup} • ${d.city}</p>
+      </div>`;
+  });
+
+  const volunteers = await fetch("/api/volunteers").then(r => r.json());
+  const volunteerList = document.getElementById("volunteerList");
+  volunteerList.innerHTML = "";
+  volunteers.forEach(v => {
+    volunteerList.innerHTML += `
+      <div class="bg-[#1f2937] p-4 rounded-xl">
+        <p class="font-semibold">${v.name}</p>
+        <p class="text-sm text-gray-400">${v.city} • ${v.status}</p>
+      </div>`;
+  });
+}
+
+loadData();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>BloodConnect Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-black text-white">
+
+<div class="flex min-h-screen">
+
+  <!-- Sidebar -->
+  <aside class="w-64 bg-gray-900 p-6">
+    <h1 class="text-2xl mb-8">BloodConnect</h1>
+    <nav class="space-y-4">
+      <a class="block">Dashboard</a>
+      <a id="volunteerMenu">Volunteers</a>
+      <a id="donorMenu">Donors</a>
+      <a>Helpline</a>
+      <a>Camp Manager</a>
+    </nav>
+  </aside>
+
+  <!-- Main -->
+  <main class="flex-1 p-8">
+    <h2 id="welcome" class="text-3xl mb-6"></h2>
+
+    <div class="grid grid-cols-4 gap-6 mb-8">
+      <div class="bg-gray-800 p-6 rounded">
+        Volunteers
+        <h3 id="volunteers" class="text-2xl">0</h3>
+      </div>
+      <div class="bg-gray-800 p-6 rounded">
+        Donors
+        <h3 id="donors" class="text-2xl">0</h3>
+      </div>
+      <div class="bg-gray-800 p-6 rounded">
+        Active
+        <h3 id="active" class="text-2xl">0</h3>
+      </div>
+      <div class="bg-gray-800 p-6 rounded">
+        Completed
+        <h3 id="completed" class="text-2xl">0</h3>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+const role = localStorage.getItem("role");
+document.getElementById("welcome").innerText =
+  "Welcome " + role;
+
+// Role-based menu
+if (role === "Volunteer") {
+  document.getElementById("volunteerMenu").style.display = "none";
+  document.getElementById("donorMenu").style.display = "none";
+}
+
+// Load dashboard data
+async function loadDashboard() {
+  const res = await fetch("/api/dashboard");
+  const data = await res.json();
+
+  document.getElementById("volunteers").innerText = data.totalVolunteers;
+  document.getElementById("donors").innerText = data.totalDonors;
+  document.getElementById("active").innerText = data.activeRequests;
+  document.getElementById("completed").innerText = data.completedRequests;
+}
+
+loadDashboard();
+</script>
+
+</body>
+</html>

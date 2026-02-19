@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>BloodConnect Login</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-black flex items-center justify-center h-screen">
+
+<div class="bg-gray-900 p-8 rounded-xl w-96 shadow-xl">
+  <h2 class="text-white text-2xl mb-6 text-center">BloodConnect</h2>
+
+  <input id="email" placeholder="Email"
+    class="w-full p-3 mb-4 rounded bg-gray-800 text-white"/>
+
+  <input id="password" type="password" placeholder="Password"
+    class="w-full p-3 mb-4 rounded bg-gray-800 text-white"/>
+
+  <select id="role"
+    class="w-full p-3 mb-6 rounded bg-gray-800 text-white">
+    <option>Admin</option>
+    <option>Manager</option>
+    <option>HR</option>
+    <option>Outreach</option>
+    <option>Volunteer</option>
+  </select>
+
+  <button onclick="login()"
+    class="w-full bg-red-600 text-white p-3 rounded">
+    Login
+  </button>
+</div>
+
+<script>
+function login() {
+  const role = document.getElementById("role").value;
+  localStorage.setItem("role", role);
+  window.location.href = "dashboard.html";
+}
+</script>
+
+</body>
+</html>
